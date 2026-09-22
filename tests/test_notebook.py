@@ -54,3 +54,8 @@ def test_six_executed_answers_have_reasoning_and_portable_outputs(tmp_path):
     assert "El promedio de la demanda de los meses observados" in answers[5]
     assert "mide cuánto varió la demanda entre esos meses" in answers[5]
     assert "d̄ es el pronóstico;" not in answers[5]
+    assert "Student" not in answers[5]
+    assert "límite predictivo superior basado en la distribución t" in answers[5]
+    assert "Por qué uso una comparación descriptiva" in answers[4]
+    for omitted in ["Módulo 3", "Módulo 4", "p-valor", "R²", "regresión"]:
+        assert omitted not in answers[4]
