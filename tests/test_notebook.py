@@ -51,3 +51,6 @@ def test_six_executed_answers_have_reasoning_and_portable_outputs(tmp_path):
     assert "el límite de Student lo aproxima" not in answers[5]
     assert "1 + 1/n" in answers[5]
     assert "varianza positiva" in answers[5]
+    assert "El promedio de la demanda de los meses observados" in answers[5]
+    assert "mide cuánto varió la demanda entre esos meses" in answers[5]
+    assert "d̄ es el pronóstico;" not in answers[5]
