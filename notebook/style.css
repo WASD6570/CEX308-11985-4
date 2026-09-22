@@ -1,0 +1,10 @@
+.tp4-output {font-family:Arial,sans-serif; font-size:15px; line-height:1.5; max-width:980px; color:#17212b; background:white; padding:18px;}
+.tp4-output h2,.tp4-output h3 {color:#174f7a;}
+.tp4-output table {width:100%; border-collapse:collapse; margin:16px 0;}
+.tp4-output th {background:#174f7a; color:white; text-align:left;}
+.tp4-output td,.tp4-output th {border:1px solid #cbd5df; padding:8px;}
+.tp4-output .num {text-align:right;}
+.tp4-output .equation {text-align:center; padding:12px; line-height:1.8;}
+.tp4-output .note,.tp4-output .result {background:#eaf3f9; border-left:3px solid #174f7a; padding:12px; margin:12px 0;}
+.tp4-output .caption {font-size:13px; color:#536273;}
+.tp4-output a {color:#174f7a;}

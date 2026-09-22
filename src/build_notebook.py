@@ -1,6 +1,7 @@
 """Generate local and Colab notebooks from the same analytical sequence."""
 from pathlib import Path
 import textwrap
+import json
 import nbformat
 
 
@@ -55,50 +56,18 @@ if missing_packages:
 
 sys.path.insert(0, str(PROJECT / "src"))
 # Reimportar código actualizado al ejecutar nuevamente en el mismo runtime.
-for module in ["analysis", "build_report"]:
+for module in ["analysis", "notebook_view"]:
     sys.modules.pop(module, None)
 os.chdir(PROJECT)
 print("Repositorio preparado; ejecutar las celdas siguientes en orden.")
 '''
 
-ANALYSIS_SETUP = '''
-import json
+ANALYSIS_IMPORTS = """
 import math
-import re
 from IPython.display import HTML, display
 from analysis import analyze, opportunity_cost, value_inventory
-from build_report import build_report
-
-result = analyze(PROJECT)
-report_paths = build_report(PROJECT)
-report_html = report_paths["html"].read_text()
-sections = re.findall(r"(<h2>.*?)(?=<h2>|</body>)", report_html, flags=re.S)
-assert len(sections) == 8
-sources = json.loads((PROJECT / "data/reference/sources.json").read_text())["sources"]
-
-notebook_style = """
-<style>
-.tp4-output {font-family:Arial,sans-serif; font-size:15px; line-height:1.5; max-width:980px; color:#17212b; background:white; padding:18px;}
-.tp4-output h2,.tp4-output h3 {color:#174f7a;}
-.tp4-output table {width:100%; border-collapse:collapse; margin:16px 0;}
-.tp4-output th {background:#174f7a; color:white; text-align:left;}
-.tp4-output td,.tp4-output th {border:1px solid #cbd5df; padding:8px;}
-.tp4-output .num {text-align:right;}
-.tp4-output .equation {text-align:center; padding:12px; line-height:1.8;}
-.tp4-output .note,.tp4-output .result {background:#eaf3f9; border-left:3px solid #174f7a; padding:12px; margin:12px 0;}
-.tp4-output .caption {font-size:13px; color:#536273;}
-.tp4-output a {color:#174f7a;}
-</style>
+from notebook_view import render_answer
 """
-
-def show_section(number):
-    fragment = re.sub(r"</?section\\b[^>]*>", "", sections[number - 1])
-    for source in sources:
-        fragment = fragment.replace(f'href="#source-{source["id"]}"', f'href="{source["url"]}"')
-    display(HTML(notebook_style + '<div class="tp4-output">' + fragment + '</div>'))
-
-print("Planilla verificada y datos históricos comparables. Cálculo sin redondeos intermedios.")
-'''
 
 
 def build_notebooks(root, output_dir=None):
@@ -107,62 +76,62 @@ def build_notebooks(root, output_dir=None):
     output.mkdir(parents=True, exist_ok=True)
     markdown = nbformat.v4.new_markdown_cell
     code = lambda source: nbformat.v4.new_code_cell(textwrap.dedent(source).strip())
-    common = [
-        markdown("## Datos y preparación del cálculo\n\nLa planilla se verifica mediante SHA-256. Se usan datos históricos fechados, no cotizaciones actuales. Las explicaciones y tablas se generan desde la misma plantilla que el informe PDF."),
-        code(ANALYSIS_SETUP),
-        code('''
-        # 1. Costo de adquisición por bolsa, antes de ganancia e IVA de venta.
+    answers = [
+        code("""
+        # Punto 1. Costo de adquisición: subtotal informado, sin margen de venta.
+        result = analyze(PROJECT)
         unit_cost_ars = result["pallet_cost_ars"] / result["pallet_bags"]
         assert math.isclose(unit_cost_ars, result["unit_cost_ars"])
-        show_section(1)
-        '''),
-        code('''
-        # 2. Conversión con el MEP fechado.
+        display(HTML(render_answer(PROJECT, 1, result)))
+        """),
+        code("""
+        # Punto 2. Conversión a USD con una cotización fechada común.
         unit_cost_usd = unit_cost_ars / result["exchange_rate"]["ars_per_usd"]
         assert math.isclose(unit_cost_usd, result["unit_cost_usd"])
-        show_section(2)
-        '''),
-        code('''
-        # 3. Media de estados corregidos, no media ponderada por días.
+        display(HTML(render_answer(PROJECT, 2, result)))
+        """),
+        code("""
+        # Punto 3. Media de estados corregidos, no media ponderada por días.
         corrected_balances = [row["corrected_balance"] for row in result["stock_audit"]]
         mean_stock = sum(corrected_balances) / len(corrected_balances)
         stock_value_usd = value_inventory(mean_stock, unit_cost_ars, result["exchange_rate"]["ars_per_usd"])
         assert math.isclose(stock_value_usd, result["stock_value_usd"])
-        show_section(3)
-        '''),
-        code('''
-        # 4. Misma moneda, período, fecha y base NAV para ambos fondos.
+        display(HTML(render_answer(PROJECT, 3, result)))
+        """),
+        code("""
+        # Punto 4. Retornos totales NAV: misma moneda, fecha y horizonte anual.
         annual_returns = {fund["ticker"]: fund["annual_return"] for fund in result["funds"]}
-        show_section(4)
-        '''),
-        code('''
-        # 5. Escenarios anuales excluyentes: no se suman.
+        display(HTML(render_answer(PROJECT, 4, result)))
+        """),
+        code("""
+        # Punto 5. Escenarios de costo de oportunidad, no prueba de superioridad.
         annual_costs = {ticker: opportunity_cost(stock_value_usd, rate) for ticker, rate in annual_returns.items()}
         for fund in result["funds"]:
             assert math.isclose(annual_costs[fund["ticker"]], fund["annual_cost_usd"])
-        show_section(5)
-        '''),
-        code("show_section(6)"),
-        markdown("## Actividad extra\n\nLa regla de inventario se presenta simbólicamente. No se fijan una cobertura empresarial ni una cantidad numérica sin validar los meses, la demanda y el plazo de entrega."),
-        code("show_section(7)"),
-        code("show_section(8)"),
-        markdown("## Archivos generados\n\nEl PDF, el HTML y los resultados JSON se encuentran en `reports/generated/`. En Colab pueden descargarse desde el panel **Archivos**. Los cambios hechos en Colab no se guardan automáticamente en GitHub; para conservarlos se utiliza **Archivo → Guardar una copia en GitHub** o **Guardar una copia en Drive**."),
-        code('''
-        # En Colab se descarga el PDF; localmente se indican las rutas relativas.
-        if "google.colab" in sys.modules:
-            from google.colab import files
-            files.download(str(report_paths["pdf"]))
-        else:
-            for path in report_paths.values():
-                print(f"Archivo generado: {path.relative_to(PROJECT)}")
-        ''')
+        display(HTML(render_answer(PROJECT, 5, result)))
+        """),
+        code("""
+        # Actividad extra. Regla predictiva simbólica: no se inventa un stock óptimo.
+        # La cobertura, la ventana mensual y la reposición requieren validación.
+        display(HTML(render_answer(PROJECT, 6, result)))
+        """),
     ]
+    sources = json.loads((root / "data/reference/sources.json").read_text())["sources"]
+    references = ["## Fuentes y datos", "",
+                  "Planilla original: `data/raw/inventory.xlsx`. Se conserva el criterio de reconstrucción del TP2 y se excluye el saldo repetido de la fila 52.", "",
+                  "Las tasas y el MEP son referencias históricas fechadas, no cotizaciones actuales. Consulta de fuentes: 21/09/2026.", ""]
+    for source in sources:
+        entry = f'- [{source["id"]}] [{source["title"]}]({source["url"]}).'
+        if "archived_url" in source:
+            entry += f' [Copia consultada del {source["archived_date"]}]({source["archived_url"]}).'
+        references.append(entry)
+    references += ["", "Los extractos factuales del emisor y los parámetros utilizados están en `data/reference/`. No se sustituyen por datos actuales al ejecutar el notebook."]
     paths = {}
     for kind, setup in [("local", LOCAL_SETUP), ("colab", COLAB_SETUP)]:
-        title = "# Inferencia Estadística TP4\n\n**Eduardo Nicolas Sanchez Lopez**\n\nCosto de oportunidad del inventario de bolsas de fibra de 600 gramos. Ejecutar las celdas de arriba hacia abajo. Los importes monetarios se presentan con dos decimales; los cálculos conservan su precisión original."
+        title = "# Inferencia Estadística TP4\n\n**Eduardo Nicolas Sanchez Lopez**\n\nCosto de oportunidad del inventario de bolsas de fibra de 600 gramos. Una celda de preparación, una por cada uno de los cinco puntos y una para la actividad extra. Cada respuesta reúne resultado, método, justificación y límites. Ejecutar de arriba hacia abajo.\n\nLos importes monetarios se muestran con dos decimales; los cálculos conservan toda su precisión. No se generan archivos PDF al ejecutar este notebook."
         if kind == "colab":
-            title += "\n\nLa primera celda carga y actualiza el repositorio público. Se necesita conexión a Internet; no es necesario cargar la planilla manualmente."
-        notebook = nbformat.v4.new_notebook(cells=[markdown(title), code(setup), *common])
+            title += "\n\nLa primera celda clona o actualiza el repositorio público. No hace falta cargar la planilla manualmente. Para conservar cambios hechos aquí, usar Archivo → Guardar una copia en GitHub o en Drive; no hay sincronización automática en ambos sentidos."
+        notebook = nbformat.v4.new_notebook(cells=[markdown(title), code(setup + ANALYSIS_IMPORTS), *answers, markdown("\n".join(references))])
         notebook.metadata = {"kernelspec": {"display_name": "Python 3", "language": "python", "name": "python3"}, "language_info": {"name": "python"}}
         if kind == "colab":
             notebook.metadata["colab"] = {"name": "inferencia_estadistica_tp4_colab.ipynb", "provenance": []}

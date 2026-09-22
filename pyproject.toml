@@ -3,7 +3,7 @@ name = "inferencia-estadistica-tp4"
 version = "0.1.0"
 description = "Valuación de inventario y costo anual de oportunidad"
 requires-python = ">=3.12"
-dependencies = ["openpyxl>=3.1,<4", "jinja2>=3.1,<4", "weasyprint>=66,<70", "pymupdf>=1.26,<2"]
+dependencies = ["openpyxl>=3.1,<4", "jinja2>=3.1,<4"]
 
 [dependency-groups]
 dev = ["pytest>=8,<10", "nbformat>=5.10,<6", "nbclient>=0.10,<1", "ipykernel>=6,<8"]
