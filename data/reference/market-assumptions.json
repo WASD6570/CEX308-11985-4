@@ -1,0 +1,39 @@
+{
+  "report_date": "2026-09-21",
+  "valuation_convention": "Fixed June 2 2025 exchange rate applied to the full TP2 inventory average; not a June 2 forecast or contemporaneous stock estimate.",
+  "exchange_rate": {
+    "ars_per_usd": 1183.78,
+    "date": "2025-06-02",
+    "kind": "MEP closing reference; not an executable bid or ask",
+    "source_url": "https://www.lanacion.com.ar/economia/dolar/dolar-hoy-tras-tocar-los-1200-las-cotizaciones-vuelven-a-operar-a-la-baja-nid02062025/"
+  },
+  "funds": [
+    {
+      "ticker": "AOR",
+      "name": "iShares Core 60/40 Balanced Allocation ETF",
+      "annual_total_return_percent": "9.901322",
+      "annual_return": 0.09901322,
+      "displayed_percent": "9.90",
+      "as_of_date": "2025-05-31",
+      "period": "1y",
+      "return_type": "navSourced",
+      "currency": "USD",
+      "evidence_file": "aor-returns-20250531.json",
+      "source_url": "https://www.ishares.com/varnish-api/blk-one01-product-data/product-data/api/v2/get-product-data?appSubType=ISHARES&appType=PRODUCT_PAGE&component=performance.returns.average&locale=en_US&portfolioId=239756&targetSite=us-ishares&userType=individual&excludeContent=true&asOfDate=20250531&includeConfig=true"
+    },
+    {
+      "ticker": "SGOV",
+      "name": "iShares 0-3 Month Treasury Bond ETF",
+      "annual_total_return_percent": "4.780024",
+      "annual_return": 0.04780024,
+      "displayed_percent": "4.78",
+      "as_of_date": "2025-05-31",
+      "period": "1y",
+      "return_type": "navSourced",
+      "currency": "USD",
+      "evidence_file": "sgov-returns-20250531.json",
+      "source_url": "https://www.ishares.com/varnish-api/blk-one01-product-data/product-data/api/v2/get-product-data?appSubType=ISHARES&appType=PRODUCT_PAGE&component=performance.returns.average&locale=en_US&portfolioId=314116&targetSite=us-ishares&userType=individual&excludeContent=true&asOfDate=20250531&includeConfig=true"
+    }
+  ],
+  "rounding": "Use full issuer precision; round only reader-facing currency results."
+}

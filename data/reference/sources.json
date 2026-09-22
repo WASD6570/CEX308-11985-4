@@ -1,0 +1,72 @@
+{
+  "sources": [
+    {
+      "id": 1,
+      "url": "https://www.ishares.com/varnish-api/blk-one01-product-data/product-data/api/v2/get-product-data?appSubType=ISHARES&appType=PRODUCT_PAGE&component=performance.returns.average&locale=en_US&portfolioId=239756&targetSite=us-ishares&userType=individual&excludeContent=true&asOfDate=20250531&includeConfig=true",
+      "title": "iShares: AOR, retorno total NAV a un año al 31/05/2025",
+      "accessed": "2026-09-21"
+    },
+    {
+      "id": 2,
+      "url": "https://www.ishares.com/varnish-api/blk-one01-product-data/product-data/api/v2/get-product-data?appSubType=ISHARES&appType=PRODUCT_PAGE&component=performance.returns.average&locale=en_US&portfolioId=314116&targetSite=us-ishares&userType=individual&excludeContent=true&asOfDate=20250531&includeConfig=true",
+      "title": "iShares: SGOV, retorno total NAV a un año al 31/05/2025",
+      "accessed": "2026-09-21"
+    },
+    {
+      "id": 3,
+      "url": "https://www.lanacion.com.ar/economia/dolar/dolar-hoy-tras-tocar-los-1200-las-cotizaciones-vuelven-a-operar-a-la-baja-nid02062025",
+      "title": "La Nación: cotización MEP de cierre, 02/06/2025",
+      "accessed": "2026-09-21"
+    },
+    {
+      "id": 4,
+      "url": "https://www.ishares.com/us/products/314116/ishares-0-3-month-treasury-bond-etf",
+      "title": "iShares: SGOV, descripción, riesgo y metodología",
+      "accessed": "2026-09-21"
+    },
+    {
+      "id": 5,
+      "url": "https://www.ishares.com/us/products/239756/ishares-growth-allocation-etf",
+      "title": "iShares: AOR, descripción y metodología",
+      "accessed": "2026-09-21"
+    },
+    {
+      "id": 6,
+      "url": "https://www.ishares.com/us/literature/annual-report/ar-aor-en.pdf",
+      "title": "iShares: informe anual AOR, identidad del fondo",
+      "accessed": "2026-09-21"
+    },
+    {
+      "id": 7,
+      "url": "https://meca.ues21.edu.ar/canvas/0GRADO2A2023/inferenciaestadistica/L12/M3L4.pdf",
+      "title": "Universidad Siglo 21: Módulo 3, lectura 4, Pruebas de hipótesis para diferencia de medias",
+      "accessed": "2026-09-21"
+    },
+    {
+      "id": 8,
+      "url": "https://meca.ues21.edu.ar/canvas/0GRADO2A2023/inferenciaestadistica/L13/M4L1.pdf",
+      "title": "Universidad Siglo 21: Módulo 4, lectura 1, Ajuste de curvas, regresión y correlación",
+      "accessed": "2026-09-21"
+    },
+    {
+      "id": 9,
+      "url": "https://ocw.mit.edu/courses/2-854-introduction-to-manufacturing-systems-fall-2016/6c8fec8f99bcf7059b73b82e96d43901_MIT2_854F16_Inventory.pdf",
+      "title": "Gershwin, S. B. (2016). Inventory. MIT OpenCourseWare, 2.854: modelo EOQ, pp. 43–50",
+      "accessed": "2026-09-21"
+    },
+    {
+      "id": 10,
+      "archived_url": "https://web.archive.org/web/20250315045624/https://www.itl.nist.gov/div898/software/dataplot/refman1/auxillar/predlimi.htm",
+      "archived_date": "15/03/2025",
+      "url": "https://itl.nist.gov/div898/software/dataplot/refman1/auxillar/predlimi.htm",
+      "title": "NIST. Dataplot Reference Manual: Prediction Limits (mean), límite predictivo para una observación futura",
+      "accessed": "2026-09-21"
+    },
+    {
+      "id": 11,
+      "url": "https://ocw.mit.edu/courses/esd-260j-logistics-systems-fall-2006/bc18dd1b2543535a61f826d00a8c6e42_lect12.pdf",
+      "title": "Caplice, C. (2006). Inventory Management: More Probabilistic Demand. MIT, ESD.260, pp. 5–6: revisión periódica",
+      "accessed": "2026-09-21"
+    }
+  ]
+}

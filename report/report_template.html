@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="utf-8"><title>TP4 · Inferencia Estadística</title><meta name="author" content="Eduardo Nicolas Sanchez Lopez"><link rel="stylesheet" href="style.css"></head>
+<body>
+<section class="cover">
+  <p class="degree">Licenciatura en Matemática</p>
+  <h1>Inferencia Estadística TP4</h1>
+  <p class="subtitle">Costo de oportunidad del inventario<br>Bolsas de fibra de 600 gramos</p>
+  <div class="metadata">
+    <div><span>Estudiante</span><strong>Eduardo Nicolas Sanchez Lopez</strong></div>
+    <div><span>Trabajo práctico</span><strong>MAP 2 · Módulos 3 y 4</strong></div>
+    <div><span>Fecha del informe</span><strong>21 de septiembre de 2026</strong></div>
+    <div><span>Valuación de referencia</span><strong>MEP del 2 de junio de 2025</strong></div>
+  </div>
+</section>
+
+<section class="page">
+<h2>1. Costo de adquisición</h2>
+<p>Para valuar la mercadería utilizo el <strong>costo puesto en Mendoza informado por el dueño</strong>, identificado como «Costo Mza» en la celda E65 de Hoja1. Este subtotal corresponde a un palet de {{ pallet_bags|num(0) }} bolsas y antecede al margen de ganancia, al IVA de venta y al ajuste del precio al público. La tabla reconstruye su composición a partir de las filas 58 a 73 de la planilla.</p>
+<table><thead><tr><th>Componente informado</th><th>Celda</th><th class="num">Importe por palet (ARS)</th></tr></thead><tbody>
+{% for item in cost_components %}<tr><td>{{ ['Precio de fábrica (palet de 1.260 bolsas)', 'Impuesto a las ganancias, según planilla', 'Impuesto a los ingresos brutos, según planilla', 'Descarga', 'Seguro'][loop.index0] }}</td><td>{{ item.source_cell }}</td><td class="num">{{ item.amount_ars|num }}</td></tr>{% endfor %}
+<tr class="total"><td>Costo puesto en Mendoza</td><td>E65</td><td class="num">{{ pallet_cost_ars|num }}</td></tr>
+</tbody></table>
+<div class="equation">Costo por bolsa = {{ pallet_cost_ars|num }} ARS / {{ pallet_bags|num(0) }} bolsas<br><strong>c ≈ {{ unit_cost_ars|num }} ARS/bolsa</strong></div>
+<p>No empleo los ARS 7.900,00 de E73: son el precio de venta al público. Tampoco uso E69, porque su importe unitario ya incorpora el 8 % de ganancia agregado en E66. El precio de fábrica aislado (E59) equivale a ARS {{ factory_unit_cost_ars|num }} por bolsa, pero no incluye los restantes conceptos del subtotal elegido.</p>
+<div class="note"><strong>Criterio de cálculo.</strong> Conservo los importes monetarios informados, no reconstruyo los rubros a partir de sus porcentajes. La suma E59:E63 coincide con E65. Sin embargo, el 33 % y el 3 % no reproducen exactamente sus importes y el seguro de ARS 7.566,00 no equivale al 1 % del precio de fábrica. Además, no se informa el tratamiento ni la recuperabilidad de los rubros tributarios. Por eso, el resultado depende de aceptar «Costo Mza» como costo informado de adquisición; no constituye una validación contable de esos conceptos.</div>
+
+<h2>2. Conversión a dólares</h2>
+<p>Adopto el <strong>MEP de cierre de referencia del 02/06/2025: ARS {{ exchange_rate.ars_per_usd|num }} por USD</strong>, publicado en la crónica de cierre de La Nación. Es una referencia fechada de principios de junio, no una cotización ejecutable de compra o venta con spread y comisiones incluidos.{{ cite(3) }}</p>
+<div class="equation">c<sub>USD</sub> = c<sub>ARS</sub> / TC<br>{{ unit_cost_ars|num }} / {{ exchange_rate.ars_per_usd|num }} ≈ <strong>{{ unit_cost_usd|num }} USD/bolsa</strong></div>
+<p class="caption">Los importes monetarios se muestran con dos decimales. Los cálculos conservan la precisión completa de los datos, sin utilizar los valores redondeados en los pasos siguientes.</p>
+</section>
+
+<section class="page">
+<h2>3. Valor promedio del stock</h2>
+<p>Retomo el promedio corregido del TP2: el stock inicial de la fila 15 y los 36 cierres de las filas 16 a 51, con igual ponderación. Se excluye la fila 52 porque repite el último saldo sin incorporar un movimiento. La compra de 2.520 bolsas de la fila 34 se incluye al reconstruir la secuencia:</p>
+<div class="equation">I<sub>t</sub> = I<sub>t−1</sub> + compras<sub>t</sub> − ventas<sub>t</sub><br>Ī = Σ I<sub>t</sub> / 37 = {{ stock_sum|num(0) }} / 37 = <strong>{{ mean_stock|num(6) }} bolsas</strong></div>
+<table><thead><tr><th>Verificación de la reconstrucción</th><th class="num">Bolsas</th></tr></thead><tbody>
+<tr><td>Stock inicial + compras − ventas</td><td class="num">{{ opening_stock|num(0) }} + {{ purchases|num(0) }} − {{ sales|num(0) }}</td></tr>
+<tr><td>Stock final corregido</td><td class="num">{{ closing_stock|num(0) }}</td></tr>
+<tr><td>Promedio de los 37 estados de inventario</td><td class="num">{{ mean_stock|num }}</td></tr>
+</tbody></table>
+<div class="equation">V̄<sub>USD</sub> = Ī × c<sub>USD</sub> = ({{ stock_sum|num(0) }}/37) × ({{ pallet_cost_ars|num }}/{{ pallet_bags|num(0) }}) / {{ exchange_rate.ars_per_usd|num }}<br><strong>Valor promedio del stock = USD {{ stock_value_usd|num }}</strong></div>
+<p class="caption">El equivalente previo a la conversión es ARS {{ stock_value_ars|num }}. Se aplica un único costo unitario informado, no una valuación histórica de cada lote.</p>
+<div class="note"><strong>Interpretación del promedio.</strong> Es una media por registro, no una media mensual ni ponderada por días. La planilla contiene fechas incompletas y movimientos hasta julio de 2025. Valuar ese promedio con el MEP del 02/06/2025 es una convención común de comparación, no una estimación del stock existente ni de la información disponible en esa fecha. Se supone que este nivel medio representa el capital inmovilizado durante el año del escenario.</div>
+
+<h2>4. Rendimientos anuales</h2>
+<p>Un ETF es un fondo cuyas participaciones cotizan en bolsa. <strong>AOR</strong> combina exposición a acciones y bonos, con una asignación objetivo 60/40. Es el fondo llamado Growth Allocation en la consigna; su denominación pasó a <em>iShares Core 60/40 Balanced Allocation ETF</em> el 19/02/2025. <strong>SGOV</strong> invierte en deuda del Tesoro estadounidense de vencimiento entre cero y tres meses. Su perfil es de bajo riesgo, no de riesgo nulo.{{ cite(4) }}{{ cite(5) }}{{ cite(6) }}</p>
+<table><thead><tr><th>Fondo</th><th>Período y base comunes</th><th class="num">Retorno anual</th></tr></thead><tbody>
+{% for fund in funds %}<tr><td><strong>{{ fund.ticker }}</strong></td><td>Un año al 31/05/2025 · NAV · USD</td><td class="num">{{ fund.annual_total_return_percent|float|num(6) }} % {{ cite(loop.index) }}</td></tr>{% endfor %}
+</tbody></table>
+<p class="caption">NAV indica valor neto de los activos. Los retornos totales del emisor incluyen reinversión de distribuciones y descuentan gastos del fondo; no son variaciones de precio solamente ni tasas SEC a 30 días.{{ cite(4) }} Se utiliza la precisión original del dato: las cifras publicadas redondeadas son 9,90 % y 4,78 %.{{ cite(1) }}{{ cite(2) }}</p>
+</section>
+
+<section class="page">
+<h2>5. Costo anual de oportunidad</h2>
+<p>El costo de oportunidad financiero es el rendimiento que produciría el capital inmovilizado bajo cada tasa de referencia. Para cada fondo <em>j</em>, con un horizonte de un año:</p>
+<div class="equation">CO<sub>j</sub> = V̄<sub>USD</sub> × r<sub>j</sub> = Ī × c<sub>USD</sub> × r<sub>j</sub></div>
+<table><thead><tr><th>Alternativa</th><th class="num">Capital (USD)</th><th class="num">Tasa anual</th><th class="num">Costo (USD/año)</th></tr></thead><tbody>
+{% for fund in funds %}<tr><td><strong>{{ fund.ticker }}</strong></td><td class="num">{{ stock_value_usd|num }}</td><td class="num">{{ fund.annual_total_return_percent|float|num(6) }} %</td><td class="num"><strong>{{ fund.annual_cost_usd|num }}</strong></td></tr>{% endfor %}
+</tbody></table>
+<div class="result"><strong>Resultado.</strong> Mantener el inventario promedio representa un costo de oportunidad de <strong>USD {{ funds[0].annual_cost_usd|num }} por año frente a AOR</strong> y de <strong>USD {{ funds[1].annual_cost_usd|num }} por año frente a SGOV</strong>, si se repitieran los rendimientos anuales de referencia. Son dos alternativas excluyentes: no se suman.</div>
+<p>La diferencia entre escenarios es USD {{ annual_cost_difference_usd|num }} anuales. Por bolsa mantenida en promedio durante un año, el costo financiero sería USD {{ funds[0].unit_annual_cost_usd|num }} con AOR y USD {{ funds[1].unit_annual_cost_usd|num }} con SGOV. Estos coeficientes permiten medir el efecto de cambios en el inventario sin recalcular toda la estructura.</p>
+<p>La cifra no es una pérdida contable ya ocurrida ni una ganancia futura asegurada. Tampoco es el costo total de almacenamiento: faltan alquiler, deterioro y otros gastos. Los gastos del fondo ya están recogidos en el retorno utilizado; no se descuentan nuevamente. No se modelan impuestos del inversor, comisiones de intermediación, conversiones o transferencias.{{ cite(4) }}{{ cite(5) }}</p>
+
+<h3>Criterio estadístico y de decisión</h3>
+<p><strong>Módulo 3.</strong> Comparar dos resultados históricos no equivale a probar que una rentabilidad media poblacional supera a otra. Aquí se dispone de un retorno anual agregado por fondo, no de una muestra de retornos para estimar su dispersión. Por eso no calculo un p-valor ni afirmo superioridad estadística. Una comparación inferencial requeriría una serie homogénea, un contraste definido y un tratamiento de la dependencia temporal y entre fondos.{{ cite(7) }}</p>
+<p><strong>Módulo 4.</strong> La expresión CO(S) = c<sub>USD</sub> × r × S es una relación lineal definida por el cálculo, no una regresión estimada. Su pendiente es el costo anual por bolsa; no necesita ajustar una recta ni interpretar un R² como evidencia. Para explicar o predecir demanda mediante regresión harían falta observaciones y variables pertinentes, además de evaluar el modelo y sus supuestos.{{ cite(8) }}</p>
+
+<h2>6. Conclusiones</h2>
+<p>El promedio corregido de <strong>{{ mean_stock|num }} bolsas</strong> equivale a <strong>USD {{ stock_value_usd|num }}</strong> bajo la base de costo elegida. Para medir el costo financiero de capital de trabajo, tomaría SGOV como referencia de menor riesgo y AOR como escenario alternativo con exposición a acciones y bonos, no como una promesa de obtener más rendimiento. La mayor cifra de AOR en este período no demuestra que sea preferible para fondos que la pyme necesite para reponer mercadería.</p>
+<p>La decisión útil es identificar inventario prescindible sin comprometer ventas. Reducir stock disminuye este componente financiero, pero no permite concluir que convenga eliminarlo: una política de cobertura exige conocer demanda, plazo de entrega y nivel de servicio. Para optimizar el costo total también hacen falta los costos de pedido, tenencia y faltantes. También debe confirmarse qué rubros del subtotal del dueño corresponden efectivamente a adquisición. Estas condiciones importan más que la precisión decimal del resultado.</p>
+</section>
+
+<section class="page extra">
+<h2>7. Actividad extra: stock según demanda mensual</h2>
+<h3>Mínimo sin restricciones y criterio de servicio</h3>
+<p>Si S ≥ 0 es el stock promedio, con costo unitario y tasa positivos, CO(S) = c<sub>USD</sub> × r × S alcanza su mínimo en S = 0. Sin embargo, eliminar el stock no asegura atender las ventas. El EOQ equilibra costos de pedido y tenencia bajo demanda constante.{{ cite(9) }} Aquí propongo otra decisión: <strong>recalcular cada mes un objetivo de inventario a partir de la demanda reciente y un margen predictivo</strong>, en lugar de fijar un lote de compra.</p>
+<h3>Objetivo mensual: pronóstico más margen</h3>
+<p>Sean d<sub>1</sub>, …, d<sub>n</sub> las demandas de los últimos n meses completos y consecutivos, con n ≥ 2. Para una cobertura p (0,5 &lt; p &lt; 1) elegida por la empresa, uso un límite predictivo superior de Student para <strong>una observación futura</strong>, adaptado de NIST.{{ cite(10) }}</p>
+<div class="equation">d̄ = Σ d<sub>i</sub>/n &nbsp; · &nbsp; s<sub>d</sub> = √[Σ(d<sub>i</sub> − d̄)²/(n − 1)]<br>U<sub>t+1</sub> = d̄ + t<sub>p, n−1</sub> s<sub>d</sub> √(1 + 1/n)<br><strong>T<sub>t+1</sub> = máx{0, ⌈U<sub>t+1</sub>⌉} bolsas</strong></div>
+<p>d̄ es el pronóstico; s<sub>d</sub>, el desvío muestral; t<sub>p, n−1</sub>, el percentil p de Student. El redondeo es hacia arriba a bolsas enteras. El factor √(1 + 1/n) incorpora variación futura e incertidumbre de estimación: <strong>no es un intervalo para la media</strong>.{{ cite(10) }} Se actualiza la ventana cada mes.</p>
+<div class="note"><strong>Supuestos y cobertura.</strong> El límite U tiene cobertura p en muestreos repetidos si los meses observados y el futuro son independientes y siguen la misma distribución normal con varianza positiva. Para bolsas, la normalidad es una aproximación: p es una <strong>cobertura nominal</strong> que debe evaluarse.{{ cite(10) }} Redondear hacia arriba y truncar en cero no reduce la cobertura de U, pero no mantiene necesariamente la igualdad con p. Esto no es una garantía de servicio para la muestra observada ni la proporción de bolsas atendidas. Se supone reposición al comenzar el mes y no fijo p sin acordar el riesgo de faltantes.</div>
+<h3>Del objetivo a la reposición</h3>
+<p>En revisión periódica, el horizonte de protección es R + L: intervalo entre revisiones más plazo de entrega.{{ cite(11) }} La fórmula anterior cubre un mes con entrega inmediata; si L &gt; 0 o varía, debe modelarse la demanda durante todo ese horizonte. Con posición de inventario PI = existencias utilizables + pedidos pendientes de recibir − demanda atrasada, el pedido es máx{0, T − PI}, sujeto a capacidad, lotes y disponibilidad financiera.{{ cite(11) }}</p>
+<h3>Aplicación y conclusión de la actividad</h3>
+<p>La planilla permite agrupar ventas, pero no certifica meses completos: febrero y mayo de 2025 solo registran compras; la última venta es del 01/07/2025. No convierto esas ausencias en ceros ni tomo julio como mes completo. Tampoco se registran pedidos no atendidos. Por eso mantengo la regla sin calibrar. Una vez validada la serie y elegido p, evaluaré predicciones con meses anteriores únicamente, comparando errores y excedencias del objetivo; estas no equivalen a faltantes operativos observados.</p>
+<p><strong>Conclusión de la actividad.</strong> La propuesta define un objetivo mensual basado en la demanda reciente y un margen predictivo. <strong>No determina una cantidad óptima demostrada para la pyme.</strong> Su aplicación requiere validar los registros mensuales, los supuestos estadísticos, el plazo de entrega y la cobertura elegida. El objetivo T <strong>no es el stock promedio</strong> ni permite, por sí solo, calcular el ahorro anual de costo de oportunidad; para ello se necesita el promedio de existencias de la política.</p>
+</section>
+
+<section class="page sources">
+<h2>8. Fuentes y trazabilidad</h2>
+<h3>Datos del trabajo</h3>
+<ul>
+<li><strong>MAP-2.pdf.</strong> Consigna del trabajo: adquisición, conversión a USD, valuación de stock y comparación de costo de oportunidad con AOR y SGOV.</li>
+<li><strong>bolsas de fibra.xlsx, Hoja1.</strong> Filas 15–51: stock inicial y movimientos; fila 52: saldo repetido excluido. Filas 58–73: estructura de costo y precio de venta. El original se conserva sin modificaciones.</li>
+<li><strong>TP2 de Inferencia Estadística.</strong> Se mantiene el criterio de promedio del stock inicial y 36 cierres corregidos; el cálculo se reproduce desde la planilla original.</li>
+</ul>
+<h3>Fuentes externas</h3>
+<p>Consulta: 21/09/2026. Las fechas de observación económica se indican por separado. Los títulos siguientes son enlaces clicables a las fuentes.</p>
+<ol class="references">
+{% for source in sources %}<li value="{{ source.id }}" id="source-{{ source.id }}"><a href="{{ source.url }}">{{ source.title }}</a>{% if source.id in [1,2] %}<br><span class="caption">Respuesta histórica oficial: período 1y, serie navSourced, fecha de referencia 31/05/2025. No se toma el rendimiento actual de la ficha del fondo.</span>{% elif source.id == 3 %}<br><span class="caption">Crónica del 02/06/2025: el MEP terminó la rueda a ARS 1.183,78 por dólar.</span>{% elif source.id in [4,5] %}<br><span class="caption">Descripción del instrumento, metodología de retorno total y advertencias de riesgo. No se usan tasas actuales para la valuación histórica.</span>{% elif source.id == 6 %}<br><span class="caption">Informe al 31/07/2025, sección Material Fund changes. Se consulta sólo para confirmar el cambio de nombre; su rendimiento corresponde a otro período y no se incorpora al cálculo.</span>{% endif %}{% if source.archived_url is defined %}<br><span class="caption"><a href="{{ source.archived_url }}">Copia consultada: archivo del {{ source.archived_date }}.</a></span>{% endif %}</li>{% endfor %}
+</ol>
+<h3>Reproducción del cálculo</h3>
+<p>El análisis en Python reconstruye los saldos, comprueba el subtotal de adquisición y valida que los rendimientos de ambos fondos correspondan a la misma fecha, moneda y medida. Las respuestas originales del emisor y los parámetros de valuación quedan conservados junto al código. Los importes del informe se obtienen sin redondeos intermedios.</p>
+<p class="caption">Los datos históricos permiten reproducir los escenarios. No establecen una rentabilidad esperada ni demuestran que el stock promedio por registro sea igual al capital promedio ponderado por tiempo.</p>
+</section>
+</body></html>
